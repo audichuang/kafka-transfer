@@ -1,6 +1,7 @@
 package com.catchaybk.customer.config;
 
 import com.catchaybk.streams.model.Transaction;
+import com.catchaybk.streams.model.TransactionTimeline;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.context.annotation.Bean;
@@ -17,22 +18,22 @@ import java.util.Map;
 public class KafkaConfig {
 
     @Bean
-    public ConsumerFactory<String, Transaction> consumerFactory() {
+    public ConsumerFactory<String, TransactionTimeline> consumerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "transaction-consumer");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
-        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, "com.catchaybk.streams.model.Transaction");
-        props.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
+        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, TransactionTimeline.class.getName());
 
         return new DefaultKafkaConsumerFactory<>(props);
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, Transaction> kafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, Transaction> factory = new ConcurrentKafkaListenerContainerFactory<>();
+    public ConcurrentKafkaListenerContainerFactory<String, TransactionTimeline> kafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, TransactionTimeline> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
         return factory;
     }

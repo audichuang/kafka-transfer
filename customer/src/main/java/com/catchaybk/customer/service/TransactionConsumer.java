@@ -12,7 +12,7 @@ public class TransactionConsumer {
 
     @KafkaListener(topics = "transaction-timeline")
     public void consumeTimeline(TransactionTimeline timeline) {
-        log.info("Consumer received timeline - Customer: {}, Transactions count: {}, Last updated: {}",
+        log.info("收到交易時間軸資料 - 客戶ID: {}, 交易筆數: {}, 最後更新時間: {}",
                 timeline.getCustomerId(),
                 timeline.getTransactions().size(),
                 timeline.getLastUpdated());
@@ -20,7 +20,7 @@ public class TransactionConsumer {
 
     @KafkaListener(topics = "large-transactions")
     public void consumeLargeTransactions(Transaction transaction) {
-        log.info("Consumer received large transaction - ID: {}, Customer: {}, Amount: {}",
+        log.info("收到大額交易通知 - 交易編號: {}, 客戶ID: {}, 交易金額: {}",
                 transaction.getTransactionId(),
                 transaction.getCustomerId(),
                 transaction.getAmount());
@@ -28,6 +28,6 @@ public class TransactionConsumer {
 
     @KafkaListener(topics = "suspicious-transactions")
     public void consumeSuspiciousTransactions(String alert) {
-        log.info("Consumer received suspicious activity alert: {}", alert);
+        log.info("收到可疑交易警報: {}", alert);
     }
 }

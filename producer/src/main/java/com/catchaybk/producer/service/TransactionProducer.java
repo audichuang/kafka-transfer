@@ -29,16 +29,23 @@ public class TransactionProducer {
 
     public void sendTransaction() {
         Transaction transaction = generateTransaction();
-        log.info("Producing transaction: {} for customer: {}",
+        log.info("【交易產生】準備發送 \n" +
+                        "├─ 交易編號: {} \n" +
+                        "└─ 客戶ID: {}",
                 transaction.getTransactionId(),
                 transaction.getCustomerId());
 
         kafkaTemplate.send("transactions",
-                transaction.getCustomerId(),
-                transaction)
-                .thenAccept(result -> log.info("Successfully sent transaction: {}", transaction.getTransactionId()))
+                        transaction.getCustomerId(),
+                        transaction)
+                .thenAccept(result -> log.info("【交易發送】成功 - 交易編號: {}",
+                        transaction.getTransactionId()))
                 .exceptionally(ex -> {
-                    log.error("Failed to send transaction: {}", ex.getMessage());
+                    log.error("【交易發送】失敗 \n" +
+                                    "├─ 交易編號: {} \n" +
+                                    "└─ 錯誤訊息: {}",
+                            transaction.getTransactionId(),
+                            ex.getMessage());
                     return null;
                 });
     }

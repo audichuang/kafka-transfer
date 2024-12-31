@@ -81,11 +81,16 @@ public class KafkaStreamsConfig {
 
                 // 添加日誌記錄
                 transactionStream.peek((key, transaction) -> {
-                        log.info("Streams processing - Key: {}, TransactionId: {}, CustomerId: {}, Amount: {}",
+                        log.info("【串流處理】收到新交易 \n" +
+                                        "├─ 鍵值: {} \n" +
+                                        "├─ 交易編號: {} \n" +
+                                        "├─ 客戶ID: {} \n" +
+                                        "└─ 交易金額: {}",
                                         key,
                                         transaction.getTransactionId(),
                                         transaction.getCustomerId(),
                                         transaction.getAmount());
+
                 });
 
                 // 2. 分離大額交易和普通交易
@@ -138,10 +143,10 @@ public class KafkaStreamsConfig {
                                                         }
                                                         return stats;
                                                 },
-                                                Materialized.<String, TransactionStats, WindowStore<Bytes, byte[]>>as("hourly-stats")
+                                                Materialized.<String, TransactionStats, WindowStore<Bytes, byte[]>>as(
+                                                                "hourly-stats")
                                                                 .withKeySerde(Serdes.String())
-                                                                .withValueSerde(statsSerde)
-                                )
+                                                                .withValueSerde(statsSerde))
                                 .toStream()
                                 .filter((key, value) -> value != null)
                                 .to("transaction-stats");
@@ -168,15 +173,33 @@ public class KafkaStreamsConfig {
 
                 // 8. 交易時間線
                 transactionStream
-                                .transformValues(new TransactionTimelineTransformer(), "transaction-timeline-store")
-                                .to("transaction-timeline");
+                                .transformValues(new TransactionTimelineTransformer(),
+                                                "transaction-timeline-store")
+                                .filter((key, value) -> value != null)
+                                .mapValues((readOnlyKey, value) -> {
+                                        // 確保序列化時使用正確的類型
+                                        TransactionTimeline timeline = new TransactionTimeline();
+                                        timeline.setCustomerId(value.getCustomerId());
+                                        timeline.setTransactions(value.getTransactions());
+                                        return timeline;
+                                })
+                                .to("transaction-timeline",
+                                                Produced.with(Serdes.String(),
+                                                                new JsonSerde<>(TransactionTimeline.class)));
 
                 // 9. 監控
                 transactionStream.peek((key, value) -> {
                         try {
                                 MetricsReporter.recordTransaction(value);
                         } catch (Exception e) {
-                                log.error("Error processing transaction: {}", e.getMessage(), e);
+                                log.error("【處理錯誤】交易處理失敗 \n" +
+                                                "├─ 錯誤訊息: {} \n" +
+                                                "├─ 交易編號: {} \n" +
+                                                "└─ 客戶ID: {}",
+                                                e.getMessage(),
+                                                value.getTransactionId(),
+                                                value.getCustomerId(),
+                                                e);
                         }
                 });
 
