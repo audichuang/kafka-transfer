@@ -2,15 +2,22 @@ package com.catchaybk.customer.service;
 
 import com.catchaybk.customer.entity.CustomerAccount;
 import com.catchaybk.customer.repository.CustomerAccountRepository;
+import com.catchaybk.streams.model.Transaction;
+
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class AccountService {
     private final CustomerAccountRepository accountRepository;
+    private final LoggingService loggingService;
 
     @Transactional
     public void processTransaction(String customerId, BigDecimal amount, boolean isDeposit) {

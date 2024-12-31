@@ -66,15 +66,33 @@ public class TransactionService {
                 transaction.getType(),
                 transaction.getAmount());
 
+        // 先發送日誌記錄交易產生
+        kafkaTemplate.send("transaction-logs", transaction.getCustomerId(),
+                transaction.toBuilder()
+                        .status(Transaction.TransactionStatus.PENDING)
+                        .build());
+
         kafkaTemplate.send("transactions", transaction.getCustomerId(), transaction)
-                .thenAccept(result -> log.info("【交易發送】成功 - 交易編號: {}",
-                        transaction.getTransactionId()))
+                .thenAccept(result -> {
+                    log.info("【交易發送】成功 - 交易編號: {}",
+                            transaction.getTransactionId());
+                    // 記錄發送成功的日誌
+                    kafkaTemplate.send("transaction-logs", transaction.getCustomerId(),
+                            transaction.toBuilder()
+                                    .status(Transaction.TransactionStatus.SENT)
+                                    .build());
+                })
                 .exceptionally(ex -> {
                     log.error("【交易發送】失敗 \n" +
                             "├─ 交易編號: {} \n" +
                             "└─ 錯誤訊息: {}",
                             transaction.getTransactionId(),
                             ex.getMessage());
+                    // 發送失敗交易日誌
+                    transaction.setStatus(Transaction.TransactionStatus.FAILED);
+                    kafkaTemplate.send("transaction-logs",
+                            transaction.getCustomerId(),
+                            transaction);
                     return null;
                 });
     }

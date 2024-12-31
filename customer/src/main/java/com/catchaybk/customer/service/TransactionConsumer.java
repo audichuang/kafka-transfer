@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import java.time.format.DateTimeFormatter;
 import com.catchaybk.customer.service.AccountService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.kafka.core.KafkaTemplate;
+import com.catchaybk.customer.service.LoggingService;
 
 @Slf4j
 @Service
@@ -16,6 +18,8 @@ public class TransactionConsumer {
 
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final AccountService accountService;
+    private final LoggingService loggingService;
+    private final KafkaTemplate<String, Transaction> kafkaTemplate;
 
     @KafkaListener(topics = "transaction-timeline", containerFactory = "timelineKafkaListenerContainerFactory")
     public void consumeTimeline(TransactionTimeline timeline) {
@@ -39,10 +43,14 @@ public class TransactionConsumer {
                     transaction.getCustomerId(),
                     transaction.getType(),
                     transaction.getAmount());
+            transaction.setStatus(Transaction.TransactionStatus.COMPLETED);
+            kafkaTemplate.send("transaction-logs", transaction.getCustomerId(), transaction);
         } catch (Exception e) {
             log.error("交易處理失敗 - 客戶ID: {}, 原因: {}",
                     transaction.getCustomerId(),
                     e.getMessage());
+            transaction.setStatus(Transaction.TransactionStatus.FAILED);
+            kafkaTemplate.send("transaction-logs", transaction.getCustomerId(), transaction);
         }
     }
 
