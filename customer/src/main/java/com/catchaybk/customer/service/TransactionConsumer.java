@@ -6,19 +6,44 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import java.time.format.DateTimeFormatter;
+import com.catchaybk.customer.service.AccountService;
+import lombok.RequiredArgsConstructor;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class TransactionConsumer {
 
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private final AccountService accountService;
 
-    @KafkaListener(topics = "transaction-timeline")
+    @KafkaListener(topics = "transaction-timeline", containerFactory = "timelineKafkaListenerContainerFactory")
     public void consumeTimeline(TransactionTimeline timeline) {
+        String lastUpdatedStr = timeline.getLastUpdated() != null ? timeline.getLastUpdated().format(formatter) : "N/A";
+
         log.info("收到交易時間軸資料 - 客戶ID: {}, 交易筆數: {}, 最後更新時間: {}",
                 timeline.getCustomerId(),
                 timeline.getTransactions().size(),
-                timeline.getLastUpdated().format(formatter));
+                lastUpdatedStr);
+    }
+
+    @KafkaListener(topics = "transactions", containerFactory = "transactionKafkaListenerContainerFactory")
+    public void consumeTransaction(Transaction transaction) {
+        try {
+            boolean isDeposit = transaction.getType() == Transaction.TransactionType.DEPOSIT;
+            accountService.processTransaction(
+                    transaction.getCustomerId(),
+                    transaction.getAmount(),
+                    isDeposit);
+            log.info("交易處理成功 - 客戶ID: {}, 類型: {}, 金額: {}",
+                    transaction.getCustomerId(),
+                    transaction.getType(),
+                    transaction.getAmount());
+        } catch (Exception e) {
+            log.error("交易處理失敗 - 客戶ID: {}, 原因: {}",
+                    transaction.getCustomerId(),
+                    e.getMessage());
+        }
     }
 
     @KafkaListener(topics = "large-transactions")
