@@ -21,6 +21,7 @@ import org.springframework.kafka.config.KafkaStreamsConfiguration;
 import org.springframework.kafka.support.serializer.JsonSerde;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.streams.errors.LogAndContinueExceptionHandler;
 
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -38,6 +39,8 @@ public class KafkaStreamsConfig {
 
                 props.put(StreamsConfig.APPLICATION_ID_CONFIG, "advanced-transaction-processor");
                 props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+                props.put(StreamsConfig.DEFAULT_DESERIALIZATION_EXCEPTION_HANDLER_CLASS_CONFIG,
+                                LogAndContinueExceptionHandler.class);
                 props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
                 props.put(StreamsConfig.PROCESSING_GUARANTEE_CONFIG, StreamsConfig.EXACTLY_ONCE_V2);
                 props.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG, 1);
@@ -46,8 +49,9 @@ public class KafkaStreamsConfig {
                 props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
                 props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, JsonSerde.class);
                 props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
-                props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, "com.catchaybk.streams.model.Transaction");
+                props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, Transaction.class.getName());
                 props.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
+                props.put(JsonDeserializer.REMOVE_TYPE_INFO_HEADERS, false);
 
                 return new KafkaStreamsConfiguration(props);
         }
