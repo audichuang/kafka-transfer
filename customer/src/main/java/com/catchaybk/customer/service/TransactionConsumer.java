@@ -33,4 +33,13 @@ public class TransactionConsumer {
     public void consumeSuspiciousTransactions(String alert) {
         log.info("收到可疑交易警報: {}", alert);
     }
+
+    @KafkaListener(topics = "risk-evaluated-transactions")
+    public void consumeRiskEvaluatedTransactions(Transaction transaction) {
+        log.info("收到風險評估結果 - 交易編號: {}, 客戶ID: {}, 交易類型: {}, 風險分數: {}",
+                transaction.getTransactionId(),
+                transaction.getCustomerId(),
+                transaction.getType(),
+                transaction.getRiskScore());
+    }
 }
