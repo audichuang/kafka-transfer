@@ -8,12 +8,15 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class TransactionTimeline {
     private String customerId;
     private List<Transaction> transactions = new ArrayList<>();
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastUpdated;
 
     public TransactionTimeline(String customerId) {

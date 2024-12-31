@@ -5,17 +5,20 @@ import com.catchaybk.streams.model.TransactionTimeline;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
+import java.time.format.DateTimeFormatter;
 
 @Slf4j
 @Service
 public class TransactionConsumer {
+
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @KafkaListener(topics = "transaction-timeline")
     public void consumeTimeline(TransactionTimeline timeline) {
         log.info("收到交易時間軸資料 - 客戶ID: {}, 交易筆數: {}, 最後更新時間: {}",
                 timeline.getCustomerId(),
                 timeline.getTransactions().size(),
-                timeline.getLastUpdated());
+                timeline.getLastUpdated().format(formatter));
     }
 
     @KafkaListener(topics = "large-transactions")

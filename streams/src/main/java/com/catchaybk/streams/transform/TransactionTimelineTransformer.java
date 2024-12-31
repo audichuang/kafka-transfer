@@ -8,6 +8,7 @@ import org.apache.kafka.streams.kstream.ValueTransformerSupplier;
 import org.apache.kafka.streams.processor.ProcessorContext;
 import org.apache.kafka.streams.state.KeyValueStore;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 @Slf4j
@@ -41,6 +42,7 @@ public class TransactionTimelineTransformer
                     timeline = new TransactionTimeline();
                     timeline.setCustomerId(customerId);
                     timeline.setTransactions(new ArrayList<>());
+                    timeline.setLastUpdated(LocalDateTime.now());
                 }
 
                 Transaction newTransaction = Transaction.builder()
@@ -53,6 +55,7 @@ public class TransactionTimelineTransformer
                         .build();
 
                 timeline.getTransactions().add(newTransaction);
+                timeline.setLastUpdated(LocalDateTime.now());
                 timelineStore.put(customerId, timeline);
 
                 log.info("已更新客戶時間軸 - 客戶ID: {}, 交易編號: {}",
