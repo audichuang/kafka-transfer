@@ -2,13 +2,12 @@ package com.catchaybk.streams.transform;
 
 import com.catchaybk.streams.model.Transaction;
 import com.catchaybk.streams.model.TransactionTimeline;
-
 import lombok.extern.slf4j.Slf4j;
-
 import org.apache.kafka.streams.kstream.ValueTransformer;
 import org.apache.kafka.streams.kstream.ValueTransformerSupplier;
 import org.apache.kafka.streams.processor.ProcessorContext;
 import org.apache.kafka.streams.state.KeyValueStore;
+
 import java.util.ArrayList;
 
 @Slf4j

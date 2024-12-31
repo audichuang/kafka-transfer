@@ -1,6 +1,7 @@
 package com.catchaybk.streams.config;
 
 import org.apache.kafka.streams.StreamsConfig;
+
 import java.util.Properties;
 
 public class KafkaStreamsConfigUtil {

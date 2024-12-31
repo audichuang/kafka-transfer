@@ -1,6 +1,5 @@
 package com.catchaybk.customer.config;
 
-import com.catchaybk.streams.model.Transaction;
 import com.catchaybk.streams.model.TransactionTimeline;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;

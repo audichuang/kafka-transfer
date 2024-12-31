@@ -1,10 +1,10 @@
 package com.catchaybk.streams.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.Data;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -56,6 +56,26 @@ public class Transaction implements Serializable {
     private String lastModifiedBy;          // 最後修改人
     private LocalDateTime lastModifiedAt;   // 最後修改時間
 
+    // 業務方法
+    public boolean isLargeTransaction() {
+        return amount.compareTo(new BigDecimal("1000000")) >= 0;
+    }
+
+    public boolean needsAdditionalVerification() {
+        return isHighRisk || isLargeTransaction();
+    }
+
+    public void markAsProcessed() {
+        this.status = TransactionStatus.COMPLETED;
+        this.lastModifiedAt = LocalDateTime.now();
+    }
+
+    public void markAsFailed(String reason) {
+        this.status = TransactionStatus.FAILED;
+        this.metadata.put("failureReason", reason);
+        this.lastModifiedAt = LocalDateTime.now();
+    }
+
     // 交易類型枚舉
     public enum TransactionType {
         DEPOSIT,           // 存款
@@ -91,25 +111,5 @@ public class Transaction implements Serializable {
             this.timestamp = LocalDateTime.now();
             return this;
         }
-    }
-
-    // 業務方法
-    public boolean isLargeTransaction() {
-        return amount.compareTo(new BigDecimal("1000000")) >= 0;
-    }
-
-    public boolean needsAdditionalVerification() {
-        return isHighRisk || isLargeTransaction();
-    }
-
-    public void markAsProcessed() {
-        this.status = TransactionStatus.COMPLETED;
-        this.lastModifiedAt = LocalDateTime.now();
-    }
-
-    public void markAsFailed(String reason) {
-        this.status = TransactionStatus.FAILED;
-        this.metadata.put("failureReason", reason);
-        this.lastModifiedAt = LocalDateTime.now();
     }
 }
