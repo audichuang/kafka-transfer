@@ -128,7 +128,7 @@ public class KafkaStreamsConfig {
                 // 5. 檢測可疑交易
                 normalTransactions
                                 .groupByKey()
-                                .windowedBy(TimeWindows.of(Duration.ofMinutes(5)))
+                                .windowedBy(TimeWindows.ofSizeWithNoGrace(Duration.ofMinutes(5)))
                                 .count()
                                 .toStream()
                                 .filter((key, count) -> count >= 5)
