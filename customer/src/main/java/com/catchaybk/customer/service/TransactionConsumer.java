@@ -6,10 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import java.time.format.DateTimeFormatter;
-import com.catchaybk.customer.service.AccountService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
-import com.catchaybk.customer.service.LoggingService;
 
 @Slf4j
 @Service
@@ -18,7 +17,6 @@ public class TransactionConsumer {
 
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final AccountService accountService;
-    private final LoggingService loggingService;
     private final KafkaTemplate<String, Transaction> kafkaTemplate;
 
     @KafkaListener(topics = "transaction-timeline", containerFactory = "timelineKafkaListenerContainerFactory")

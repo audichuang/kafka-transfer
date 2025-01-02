@@ -66,11 +66,11 @@ public class TransactionService {
                 transaction.getType(),
                 transaction.getAmount());
 
-        // 先發送日誌記錄交易產生
-        kafkaTemplate.send("transaction-logs", transaction.getCustomerId(),
-                transaction.toBuilder()
-                        .status(Transaction.TransactionStatus.PENDING)
-                        .build());
+//        // 先發送日誌記錄交易產生
+//        kafkaTemplate.send("transaction-logs", transaction.getCustomerId(),
+//                transaction.toBuilder()
+//                        .status(Transaction.TransactionStatus.PENDING)
+//                        .build());
 
         kafkaTemplate.send("transactions", transaction.getCustomerId(), transaction)
                 .thenAccept(result -> {

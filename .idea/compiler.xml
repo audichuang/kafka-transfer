@@ -10,12 +10,14 @@
         <module name="producer" />
         <module name="streams" />
         <module name="customer" />
+        <module name="logger" />
       </profile>
     </annotationProcessing>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="customer" options="-parameters" />
+      <module name="logger" options="-parameters" />
       <module name="producer" options="-parameters" />
       <module name="streams" options="-parameters" />
     </option>
